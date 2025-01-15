@@ -47,7 +47,7 @@ jobs:
         run: npm run lint
 
       - name: Start databases
-        uses: hoverkraft-tech/compose-action@v2.0.2
+        run: docker compose up -d
 
       - name: Wait for databases to be available
         run: sleep 10
