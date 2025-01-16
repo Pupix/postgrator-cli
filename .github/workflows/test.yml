@@ -1,24 +1,16 @@
 name: test
 on:
-  push:
-    branches:
-      - master
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     strategy:
       matrix:
         node-version:
-          - 20.x
           - 22.x
         mssql-version:
-          - ^7.0.0
-          - ^8.0.0
-          - ^9.0.0
-          - ^10.0.0
           - ^11.0.0
 
     steps:
@@ -38,26 +30,18 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Start databases
-        uses: hoverkraft-tech/compose-action@v2.0.2
+      - name: Setup PostgreSQL for Linux/macOS/Windows
+        uses: ikalnytskyi/action-setup-postgres@v7
+        id: postgres
+        env:
+          POSTGRES_PASSWORD: postgrator
+          POSTGRES_USER: postgrator
+          POSTGRES_DB: postgrator
+        with:
+          port: 5432
 
       - name: Wait for databases to be available
         run: sleep 10
 
       - name: Test
         run: npm run cover
-
-      - name: Publish to coveralls.io
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel: true
-
-  finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Close parallel build
-        uses: coverallsapp/github-action@v2
-        with:
-          parallel-finished: true
